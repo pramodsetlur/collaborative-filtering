@@ -12,8 +12,29 @@ SETUP
 import sys
 import math
 
-def predict(user_id, item_name, k_nearest_neighbors_list):
-    
+def print_output(k_nearest_neighbors_list, predicted_rating):
+    for user_similarity_pair in k_nearest_neighbors_list:
+        print user_similarity_pair[0], user_similarity_pair[1]
+    print "\n"
+    print predicted_rating
+
+def predict(user1, item_name, k_nearest_neighbors_list, user_item_dict):
+    numerator = 0
+    denominator = 0
+
+    for each_neighbor in k_nearest_neighbors_list:
+        user2 = each_neighbor[0]
+        similarity = each_neighbor[1]
+
+        item_list = user_item_dict[user2]
+        if item_name in item_list:
+            rating = item_list[item_name]
+            numerator +=  (similarity * rating)
+            denominator += similarity
+
+    prediction = numerator / denominator
+    return prediction
+
 
 def k_nearest_neighbors(pearson_coeffecient_list, k):
     k_nearest_neighbors_list = []
@@ -115,8 +136,9 @@ def collaborative_filter(input_file, user_id, item_name, k):
 
     pearson_coeffecient_list = generate_pearson_coeff_list(user_id, user_item_dict, user_rating_dict)
     k_nearest_neighbors_list = k_nearest_neighbors(pearson_coeffecient_list, k)
-    predicted_rating = predict(user_id, item_name, k_nearest_neighbors_list)
+    predicted_rating = predict(user_id, item_name, k_nearest_neighbors_list, user_item_dict)
 
+    return k_nearest_neighbors_list, predicted_rating
 
 if __name__ == '__main__':
     if 5 != len(sys.argv):
@@ -128,4 +150,5 @@ if __name__ == '__main__':
         item_name = sys.argv[3]
         k = int(sys.argv[4])
 
-        collaborative_filter(input_file, user_id, item_name, k)
+        k_nearest_neighbors_list, predicted_rating = collaborative_filter(input_file, user_id, item_name, k)
+        print_output(k_nearest_neighbors_list, predicted_rating)

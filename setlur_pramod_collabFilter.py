@@ -12,6 +12,20 @@ SETUP
 import sys
 import math
 
+def predict(user_id, item_name, k_nearest_neighbors_list):
+    
+
+def k_nearest_neighbors(pearson_coeffecient_list, k):
+    k_nearest_neighbors_list = []
+    sorted_k_nearest_neighbors_list = sorted(pearson_coeffecient_list.items(), key = lambda x:x[1])
+
+    count = 0
+    for i in reversed(sorted_k_nearest_neighbors_list):
+        if count < k:
+            k_nearest_neighbors_list.append(i)
+            count += 1
+    return k_nearest_neighbors_list
+
 def calculate_avg_rating(user, user_rating_dict):
     temp_list = user_rating_dict[user]
     total_rating = temp_list[0]
@@ -48,12 +62,11 @@ def pearson_correlation(user1, user2, user_item_dict, user_rating_dict):
 def generate_pearson_coeff_list(user1, user_item_dict, user_rating_dict):
     pearson_coeffecient_dict = {}
     for user2, items in user_item_dict.iteritems():
-        if user1 is not user2:
+        if user1 != user2:
             pearson_coeffecient = pearson_correlation(user1, user2, user_item_dict, user_rating_dict)
             pearson_coeffecient_dict.setdefault(user2, pearson_coeffecient)
 
-    for key, value in pearson_coeffecient_dict.iteritems():
-        print key, value
+    return  pearson_coeffecient_dict
 
 def update_user_rating_dict(each_line, user_rating_dict):
     user = each_line[0]
@@ -100,7 +113,9 @@ def collaborative_filter(input_file, user_id, item_name, k):
         user_item_dict = update_user_item_dict(each_line, user_item_dict)
         user_rating_dict = update_user_rating_dict(each_line, user_rating_dict)
 
-    generate_pearson_coeff_list(user_id, user_item_dict, user_rating_dict)
+    pearson_coeffecient_list = generate_pearson_coeff_list(user_id, user_item_dict, user_rating_dict)
+    k_nearest_neighbors_list = k_nearest_neighbors(pearson_coeffecient_list, k)
+    predicted_rating = predict(user_id, item_name, k_nearest_neighbors_list)
 
 
 if __name__ == '__main__':
@@ -111,6 +126,6 @@ if __name__ == '__main__':
         input_file = sys.argv[1]
         user_id = sys.argv[2]
         item_name = sys.argv[3]
-        k = sys.argv[4]
+        k = int(sys.argv[4])
 
         collaborative_filter(input_file, user_id, item_name, k)

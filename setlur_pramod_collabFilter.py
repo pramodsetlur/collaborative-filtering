@@ -10,6 +10,50 @@ SETUP
 '''
 
 import sys
+import math
+
+def calculate_avg_rating(user, user_rating_dict):
+    temp_list = user_rating_dict[user]
+    total_rating = temp_list[0]
+    count = temp_list[1]
+
+    average = total_rating / count
+    return average
+
+
+def pearson_correlation(user1, user2, user_item_dict, user_rating_dict):
+    user1_items = user_item_dict[user1]
+    user2_items = user_item_dict[user2]
+    user1_avg_rating = calculate_avg_rating(user1, user_rating_dict)
+    user2_avg_rating = calculate_avg_rating(user2, user_rating_dict)
+
+    numerator = 0
+    denominator_pt1 = 0
+    denominator_pt2 = 0
+
+    for item, rating in user1_items.iteritems():
+        if item in user2_items:
+            user1_item_rating = user_item_dict.get(user1).get(item)
+            user2_item_rating = user_item_dict.get(user2).get(item)
+
+            numerator += (user1_item_rating - user1_avg_rating) * (user2_item_rating - user2_avg_rating)
+            denominator_pt1 += (user1_item_rating - user1_avg_rating) * (user1_item_rating - user1_avg_rating)
+            denominator_pt2 += (user2_item_rating - user2_avg_rating) * (user2_item_rating - user2_avg_rating)
+
+    denominator = math.sqrt(denominator_pt1) * math.sqrt(denominator_pt2)
+    pearson_coeffecient = numerator / denominator
+
+    return  pearson_coeffecient
+
+def generate_pearson_coeff_list(user1, user_item_dict, user_rating_dict):
+    pearson_coeffecient_dict = {}
+    for user2, items in user_item_dict.iteritems():
+        if user1 is not user2:
+            pearson_coeffecient = pearson_correlation(user1, user2, user_item_dict, user_rating_dict)
+            pearson_coeffecient_dict.setdefault(user2, pearson_coeffecient)
+
+    for key, value in pearson_coeffecient_dict.iteritems():
+        print key, value
 
 def update_user_rating_dict(each_line, user_rating_dict):
     user = each_line[0]
@@ -46,7 +90,7 @@ def setup_input(input_file):
     file.close()
     return input_list
 
-def collaborative_filter(input_file, user_id, movie_name, k):
+def collaborative_filter(input_file, user_id, item_name, k):
     input_list = setup_input(input_file)
 
     user_item_dict = {}
@@ -56,17 +100,17 @@ def collaborative_filter(input_file, user_id, movie_name, k):
         user_item_dict = update_user_item_dict(each_line, user_item_dict)
         user_rating_dict = update_user_rating_dict(each_line, user_rating_dict)
 
-    generate_pearson_coeff_list(user_item_dict, user_rating_dict)
+    generate_pearson_coeff_list(user_id, user_item_dict, user_rating_dict)
 
 
 if __name__ == '__main__':
     if 5 != len(sys.argv):
         print len(sys.argv)
-        print "USAGE: $ python setlur_pramod_collabFilter.py [INPUT_FILE] [USER_ID] [MOVIE_NAME] [K - A number to indicate K nearest neighbors]"
+        print "USAGE: $ python setlur_pramod_collabFilter.py [INPUT_FILE] [USER_ID] [ITEM_NAME] [K - A number to indicate K nearest neighbors]"
     else:
         input_file = sys.argv[1]
         user_id = sys.argv[2]
-        movie_name = sys.argv[3]
+        item_name = sys.argv[3]
         k = sys.argv[4]
 
-        collaborative_filter(input_file, user_id, movie_name, k)
+        collaborative_filter(input_file, user_id, item_name, k)

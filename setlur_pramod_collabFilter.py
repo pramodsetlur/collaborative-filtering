@@ -11,6 +11,32 @@ SETUP
 
 import sys
 
+def update_user_rating_dict(each_line, user_rating_dict):
+    user = each_line[0]
+    rating = each_line[1]
+    item = each_line[2]
+
+    user_rating_dict.setdefault(user, [0, 0])
+    temp_list = user_rating_dict[user]
+    temp_list[0] += float(rating)
+    temp_list[1] += 1
+    user_rating_dict[user] = temp_list
+
+    return user_rating_dict
+
+def update_user_item_dict(each_line, user_item_dict):
+    user = each_line[0]
+    rating = float(each_line[1])
+    item = each_line[2]
+
+    user_item_dict.setdefault(user, {})
+    temp_dict = user_item_dict.get(user)
+    temp_dict.setdefault(item, rating)
+    user_item_dict[user] = temp_dict
+
+    return user_item_dict
+
+
 def setup_input(input_file):
     input_list = []
     with open(input_file) as file:
@@ -22,7 +48,16 @@ def setup_input(input_file):
 
 def collaborative_filter(input_file, user_id, movie_name, k):
     input_list = setup_input(input_file)
-    print input_list
+
+    user_item_dict = {}
+    user_rating_dict = {}
+
+    for each_line in input_list:
+        user_item_dict = update_user_item_dict(each_line, user_item_dict)
+        user_rating_dict = update_user_rating_dict(each_line, user_rating_dict)
+
+    generate_pearson_coeff_list(user_item_dict, user_rating_dict)
+
 
 if __name__ == '__main__':
     if 5 != len(sys.argv):

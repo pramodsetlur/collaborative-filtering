@@ -36,15 +36,9 @@ def predict(user1, item_name, k_nearest_neighbors_list, user_item_dict):
 
 
 def k_nearest_neighbors(pearson_coeffecient_list, k):
-    k_nearest_neighbors_list = []
-    sorted_k_nearest_neighbors_list = sorted(pearson_coeffecient_list.items(), key = lambda x:x[1])
+    sorted_k_nearest_neighbors_list = sorted(pearson_coeffecient_list.items(), key = lambda x:(-x[1], x[0])) [:k]
 
-    count = 0
-    for i in reversed(sorted_k_nearest_neighbors_list):
-        if count < k:
-            k_nearest_neighbors_list.append(i)
-            count += 1
-    return k_nearest_neighbors_list
+    return sorted_k_nearest_neighbors_list
 
 def calculate_avg_rating(user, user_rating_dict):
     temp_list = user_rating_dict[user]

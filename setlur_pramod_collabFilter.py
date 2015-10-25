@@ -20,6 +20,7 @@ def print_output(k_nearest_neighbors_list, predicted_rating):
 def predict(user1, item_name, k_nearest_neighbors_list, user_item_dict):
     numerator = 0
     denominator = 0
+    prediction = 0
 
     for each_neighbor in k_nearest_neighbors_list:
         user2 = each_neighbor[0]
@@ -31,20 +32,16 @@ def predict(user1, item_name, k_nearest_neighbors_list, user_item_dict):
             numerator +=  (similarity * rating)
             denominator += similarity
 
-    prediction = numerator / denominator
+    if 0 != denominator:
+        prediction = numerator / denominator
+
     return prediction
 
 
 def k_nearest_neighbors(pearson_coeffecient_list, k):
-    k_nearest_neighbors_list = []
-    sorted_k_nearest_neighbors_list = sorted(pearson_coeffecient_list.items(), key = lambda x:x[1])
+    sorted_k_nearest_neighbors_list = sorted(pearson_coeffecient_list.items(), key = lambda x:(-x[1], x[0])) [:k]
 
-    count = 0
-    for i in reversed(sorted_k_nearest_neighbors_list):
-        if count < k:
-            k_nearest_neighbors_list.append(i)
-            count += 1
-    return k_nearest_neighbors_list
+    return sorted_k_nearest_neighbors_list
 
 def calculate_avg_rating(user, user_rating_dict):
     temp_list = user_rating_dict[user]
@@ -52,6 +49,7 @@ def calculate_avg_rating(user, user_rating_dict):
     count = temp_list[1]
 
     average = total_rating / count
+
     return average
 
 
@@ -60,6 +58,7 @@ def pearson_correlation(user1, user2, user_item_dict, user_rating_dict):
     user2_items = user_item_dict[user2]
     user1_avg_rating = calculate_avg_rating(user1, user_rating_dict)
     user2_avg_rating = calculate_avg_rating(user2, user_rating_dict)
+    pearson_coeffecient = 0
 
     numerator = 0
     denominator_pt1 = 0
@@ -75,7 +74,8 @@ def pearson_correlation(user1, user2, user_item_dict, user_rating_dict):
             denominator_pt2 += (user2_item_rating - user2_avg_rating) * (user2_item_rating - user2_avg_rating)
 
     denominator = math.sqrt(denominator_pt1) * math.sqrt(denominator_pt2)
-    pearson_coeffecient = numerator / denominator
+    if 0 != denominator:
+        pearson_coeffecient = numerator / denominator
 
     return  pearson_coeffecient
 
@@ -121,6 +121,7 @@ def setup_input(input_file):
             temp_line = each_line.strip().split('\t')
             input_list.append(temp_line)
     file.close()
+
     return input_list
 
 def collaborative_filter(input_file, user_id, item_name, k):
